@@ -26,7 +26,6 @@ public class AggregateStream {
 
     @StreamListener(CarProcessor.CARS)
     public void process(final KStream<?, Car> input) {
-        // The car sale statistic are in json format
         final Serde<Car> carJsonSerde = new JsonSerde<>(Car.class, objectMapper);
 
         final Duration retention = Duration.ofSeconds(60);
