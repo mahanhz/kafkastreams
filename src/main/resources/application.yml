@@ -1,0 +1,20 @@
+spring:
+  application.name: kafka-streams-gotchas
+  cloud:
+    stream:
+      bindings:
+        cars:
+          destination: cars-topic
+  kafka:
+    bootstrap-servers: 192.168.99.100:9092
+    consumer:
+      group-id: ${spring.application.name}-group-id
+    #listener:
+      #concurrency: 10
+      #missing-topics-fatal: false
+    streams:
+      client-id: ${spring.application.name}-client-id
+      replication-factor: 1
+      #properties:
+        #num.stream.threads: 10
+        #windowstore.changelog.additional.retention.ms: 1
