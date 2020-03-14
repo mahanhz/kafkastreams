@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Instant;
 
 import static com.github.mahanhz.kafkastreams.stateful.AggregateStream.CAR_SALE_STATS_STORE;
+import static com.github.mahanhz.kafkastreams.util.CarUtil.key;
 import static org.apache.kafka.streams.state.StreamsMetadata.NOT_AVAILABLE;
 
 @Service
@@ -59,10 +60,6 @@ public class StoreService {
         return null;
     }
 
-    private String key(final String year, final String carMake) {
-        return year + "_" + carMake;
-    }
-
     private CarSaleStatistic carSaleStatisticFromStore(final ReadOnlyWindowStore<String, CarSaleStatistic> queryableStore, final String key) {
         try (final WindowStoreIterator<CarSaleStatistic> iterator = queryableStore.fetch(key, Instant.EPOCH, Instant.now())) {
             KeyValue<Long, CarSaleStatistic> carSaleStatistic = null;
@@ -70,7 +67,7 @@ public class StoreService {
                 carSaleStatistic = iterator.next();
             }
 
-            return carSaleStatistic.value;
+            return carSaleStatistic != null ? carSaleStatistic.value : null;
         }
     }
 
