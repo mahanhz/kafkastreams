@@ -13,14 +13,28 @@
 
 # Kafka commands
 
+**Describe the kafka topics**  
 ./kafka-topics.sh --zookeeper localhost:2181 --describe
+
+**Update partitions**  
+./kafka-topics.sh --topic cars-topic --alter --partitions 50 --zookeeper localhost:2181
+
+**Update retention**  
+./kafka-configs.sh --entity-type topics --entity-name kafka-streams-gotchas-car-sale-stats-store-changelog --alter --add-config retention.ms=300000 --zookeeper localhost:2181
+
+**Reset streams application**  
+./kafka-streams-application-reset.sh --application-id kafka-streams-gotchas
 
 # Kafkacat commands
 
-kafkacat -b localhost:9092 -t kafka-streams-gotchas-car-sale-stats-store-changelog
+**Consume from changelog topic**
+kafkacat -C -b localhost:9092 -t kafka-streams-gotchas-car-sale-stats-store-changelog
 
+**Consume from repartition topic**
 kafkacat -C -b localhost:9092 -t kafka-streams-gotchas-car-sale-stats-store-repartition
 
-**Consume from topic**: kafkacat -C -b localhost:9092 -t cars-topic
+**Consume from topic**  
+kafkacat -C -b localhost:9092 -t cars-topic
 
-**Write to topic**: kafkacat -b localhost:9092 -t cars-topic -T -P -l test-cars.txt
+**Write to topic**  
+kafkacat -b localhost:9092 -t cars-topic -T -P -l test-cars.txt

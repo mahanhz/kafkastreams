@@ -6,6 +6,7 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.*;
 import org.apache.kafka.streams.state.Stores;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.kafka.support.serializer.JsonSerde;
 import org.springframework.stereotype.Component;
@@ -18,17 +19,20 @@ import static com.github.mahanhz.kafkastreams.util.CarUtil.key;
 public class AggregateStream {
 
     public static final String CAR_SALE_STATS_STORE = "car-sale-stats-store";
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
+    private final long retentionMs;
 
-    public AggregateStream(final ObjectMapper objectMapper) {
+    public AggregateStream(final ObjectMapper objectMapper,
+                           @Value("${my-app.retention-ms}") final long retentionMs) {
         this.objectMapper = objectMapper;
+        this.retentionMs = retentionMs;
     }
 
     @StreamListener(CarProcessor.CARS)
     public void process(final KStream<?, Car> input) {
         final Serde<Car> carJsonSerde = new JsonSerde<>(Car.class, objectMapper);
 
-        final Duration retention = Duration.ofSeconds(60);
+        final Duration retention = Duration.ofMillis(retentionMs);
 
         input.selectKey((s, car) -> key(car))
              .groupByKey(Grouped.with(Serdes.String(), carJsonSerde))

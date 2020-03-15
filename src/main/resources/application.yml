@@ -1,3 +1,6 @@
+my-app:
+  retention-ms: 300000
+
 server:
   port: 12001
 
@@ -18,12 +21,8 @@ spring:
     bootstrap-servers: localhost:9092
     consumer:
       group-id: ${spring.application.name}-group-id
-    #listener:
-      #concurrency: 10
-      #missing-topics-fatal: false
     streams:
       client-id: ${spring.application.name}-client-id
       replication-factor: 1
       #properties:
-        #num.stream.threads: 10
-        #windowstore.changelog.additional.retention.ms: 1
+        #windowstore.changelog.additional.retention.ms: 60000
