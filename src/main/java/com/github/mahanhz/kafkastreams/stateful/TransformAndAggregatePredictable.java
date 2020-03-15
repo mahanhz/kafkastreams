@@ -1,7 +1,6 @@
 package com.github.mahanhz.kafkastreams.stateful;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.*;
@@ -16,16 +15,16 @@ import java.time.Duration;
 
 import static com.github.mahanhz.kafkastreams.util.CarUtil.key;
 
-@ConditionalOnProperty(value = "my-app.transformer", havingValue = "none")
+@ConditionalOnProperty(value = "my-app.transformer", havingValue = "predictable")
 @Component
-public class AggregateStream {
+public class TransformAndAggregatePredictable {
 
     public static final String CAR_SALE_STATS_STORE = "car-sale-stats-store";
     private final ObjectMapper objectMapper;
     private final long retentionMs;
 
-    public AggregateStream(final ObjectMapper objectMapper,
-                           @Value("${my-app.retention-ms}") final long retentionMs) {
+    public TransformAndAggregatePredictable(final ObjectMapper objectMapper,
+                                            @Value("${my-app.retention-ms}") final long retentionMs) {
         this.objectMapper = objectMapper;
         this.retentionMs = retentionMs;
     }
@@ -37,6 +36,8 @@ public class AggregateStream {
         final Duration retention = Duration.ofMillis(retentionMs);
 
         input.selectKey((s, car) -> key(car))
+             .through("kafka-streams-gotchas-repartition-topic", Produced.with(Serdes.String(), carJsonSerde))
+             .transform(() -> new MyTransformer<>("PREDICTABLE"))
              .groupByKey(Grouped.with(Serdes.String(), carJsonSerde))
              .windowedBy(TimeWindows.of(retention))
              .aggregate(CarSaleStatistic::init,
@@ -48,6 +49,8 @@ public class AggregateStream {
 
     private CarSaleStatistic aggregateCars(final CarSaleStatistic aggregate,
                                           final Car car) {
+        System.out.println("Aggregating car: " + car);
+
         long quantity = 1L;
         if (aggregate != null) {
             quantity += aggregate.getQuantity();

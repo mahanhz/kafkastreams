@@ -1,5 +1,6 @@
 my-app:
   retention-ms: 300000
+  transformer: none
 
 server:
   port: 12001

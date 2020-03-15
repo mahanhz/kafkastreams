@@ -16,6 +16,9 @@
 **Describe the kafka topics**  
 ./kafka-topics.sh --zookeeper localhost:2181 --describe
 
+**Create topic**  
+./kafka-topics.sh --topic kafka-streams-gotchas-repartition-topic --create --partitions 10 --replication-factor 1 --zookeeper localhost:2181
+
 **Update partitions**  
 ./kafka-topics.sh --topic cars-topic --alter --partitions 50 --zookeeper localhost:2181
 
