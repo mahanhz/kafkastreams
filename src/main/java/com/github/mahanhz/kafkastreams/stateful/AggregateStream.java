@@ -6,6 +6,8 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.*;
 import org.apache.kafka.streams.state.Stores;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.stream.annotation.StreamListener;
@@ -19,6 +21,8 @@ import static com.github.mahanhz.kafkastreams.util.CarUtil.key;
 @ConditionalOnProperty(value = "my-app.transformer", havingValue = "none")
 @Component
 public class AggregateStream {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AggregateStream.class);
 
     public static final String CAR_SALE_STATS_STORE = "car-sale-stats-store";
     private final ObjectMapper objectMapper;
@@ -41,13 +45,15 @@ public class AggregateStream {
              .windowedBy(TimeWindows.of(retention))
              .aggregate(CarSaleStatistic::init,
                         (key, car, aggregate) -> aggregateCars(aggregate, car),
-                        Materialized.<String, CarSaleStatistic>as(Stores.persistentWindowStore(CAR_SALE_STATS_STORE, retention, retention, false))
+                        Materialized.<String, CarSaleStatistic>as(Stores.inMemoryWindowStore(CAR_SALE_STATS_STORE, retention, retention, false))
                                 .withKeySerde(Serdes.String())
                                 .withValueSerde(new JsonSerde<>(CarSaleStatistic.class)));
     }
 
     private CarSaleStatistic aggregateCars(final CarSaleStatistic aggregate,
                                           final Car car) {
+        System.out.println("Aggregating car: " + car);
+
         long quantity = 1L;
         if (aggregate != null) {
             quantity += aggregate.getQuantity();

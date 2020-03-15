@@ -42,7 +42,7 @@ public class TransformAndAggregatePredictable {
              .windowedBy(TimeWindows.of(retention))
              .aggregate(CarSaleStatistic::init,
                         (key, car, aggregate) -> aggregateCars(aggregate, car),
-                        Materialized.<String, CarSaleStatistic>as(Stores.persistentWindowStore(CAR_SALE_STATS_STORE, retention, retention, false))
+                        Materialized.<String, CarSaleStatistic>as(Stores.inMemoryWindowStore(CAR_SALE_STATS_STORE, retention, retention, false))
                                 .withKeySerde(Serdes.String())
                                 .withValueSerde(new JsonSerde<>(CarSaleStatistic.class)));
     }
